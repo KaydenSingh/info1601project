@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search</title>
+    <link rel="stylesheet" href=
+"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+    <style>
+        
+body {
+    position: relative; 
+    background-color: rgb(75, 75, 75);
+    background-image: url('searched.jpg');
+    background-repeat: no-repeat;
+    background-size: cover; 
+    background-attachment: fixed;
+    padding: 0;
+    margin: 0;
+    flex-direction: column;
+    min-height: 100vh; 
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0; 
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(128, 128, 128, 0.5); 
+}
+
+nav, .search, .content, footer {
+    position: relative;
+    z-index: 2; 
+}
+
+nav {
+    padding: 10px;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    font-family: monospace;
+    background-color: #707070;
+    display: flex;
+    height: 100px;
+    align-items: center;
+    box-shadow: 0px 10px 5px 0px rgba(0,0,0,0.31);
+}
+
+.logo img {
+  
+    height: 100px;
+    width: auto;
+}
+
+.links {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+}
+
+.search {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px 20px 0 20px;  
+    gap: 10px;
+    box-shadow: rgba(0,0,0,0.31);
+}
+
+.filter {
+    padding: 10px;
+}
+
+button {
+    border: 1px solid gray;
+    padding: 5px;
+    border-radius: 6px;
+    height: 60px;
+    width: 150px;
+    cursor: pointer;
+}
+
+.search button {
+    border: 1px solid gray;
+    border-radius: 6px;
+    height: 50px;
+    width: 50px;
+    cursor: pointer;
+}
+
+
+
+#result {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: center;
+    margin: 20px;
+}
+
+
+.character {
+    background: rgba(0, 0, 0, 0.8); /* Gray with 0.8 opacity */
+    height: 500px;
+    width: 80%;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+}
+
+.character img {
+    padding-left: 10px;
+    width: 450px;
+    height: auto;
+    margin-right: 10px;
+    border-radius: 10px;
+}
+
+.character-info {
+    background: rgba(87, 87, 87, 0.5); /* White inner box with 0.9 opacity */
+    color: white;
+    height: 400px;
+    width: 300px;
+    padding: 20px;
+    border-radius: 10px;
+    margin-left: 200px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.heart-button {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    background-color: red;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    z-index: 3;
+}
+
+.heart-button .tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 8px;
+    border-radius: 6px;
+
+    position: absolute;
+    top: -35px;
+    right: -40px;
+    z-index: 4;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+}
+
+.heart-button:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+footer {
+  text-align: left;
+  padding: 3px;
+  background-color: #707070;
+  color: white;
+}
+    </style>
+
+<body>
+    <main>
+        <nav>
+    
+            <section class="logo">
+              <img src="graylogo.jpg" alt="Rick and Morty Logo">
+            </section>
+            <section class="links">
+                <a href="index.html">
+                    <button>Home</button>
+                  </a>
+              <a href="fav.html">
+                <button>Favourite</button>
+              </a>
+              <a href="login.html">
+                <button>Login</button>
+              </a>
+            </section>
+    
+        </nav>
+        <section class="search">
+          <input type="search" id="searchKey" placeholder="Search">
+          <button class="searchbtn" onclick="search()">
+              <i class="fa fa-search"></i>
+          </button>
+      </section>
+    
+        
+
+</main>
+<div id="result" class="content"></div>
+
+
+<footer>
+    <p>Authors: Kayden Singh, Josh Bissambhar, Joshua Pascall<br>
+    
+  </footer>
+
+  <script>
+    async function fetchAllCharacters() {
+        let url = 'https://rickandmortyapi.com/api/character';
+        let allCharacters = [];
+
+        while (url) {
+            const response = await fetch(url);
+            const data = await response.json();
+            allCharacters = allCharacters.concat(data.results);
+            url = data.info.next; 
+        }
+
+        return allCharacters; 
+    }
+
+    async function displaySearchedCharacters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchKey = urlParams.get('query').toUpperCase();
+        const allCharacters = await fetchAllCharacters();
+
+        const filteredCharacters = allCharacters.filter(character => 
+            character.name.toUpperCase().includes(searchKey)
+        );
+
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = '';
+
+        if (filteredCharacters.length > 0) {
+            for (const character of filteredCharacters) {
+                const episodeCount = character.episode.length;
+
+                const characterDiv = document.createElement('div');
+                characterDiv.className = 'character';
+                characterDiv.innerHTML = `
+                        <div style="position: relative; display: inline-block;">
+                            <img src="${character.image}" alt="${character.name}">
+                            <div class="heart-button" onclick='addToFavourites(${JSON.stringify(character)})'>
+                                <span class="tooltip-text">Add to Favourites</span>
+                                <i class="fa fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="character-info">
+                            <br>
+                            <h3>Name: ${character.name}</h3>
+                            <p>Status: ${character.status}</p>
+                            <p>Species: ${character.species}</p>
+                            <p>Origin: ${character.origin.name}</p>
+                            <p>Location: ${character.location.name}</p>
+                            <p>Created: ${character.created}</p>
+                            <p>Episodes: ${episodeCount}</p>
+                        </div>
+                    `;
+                resultDiv.appendChild(characterDiv);
+            }
+        } else {
+            resultDiv.innerHTML = `<h2>No characters found for "${searchKey}"</h2>`;
+        }
+    }
+
+    function search() {
+        let searchKey = document.querySelector('#searchKey').value;
+        window.location.href = `search.html?query=${encodeURIComponent(searchKey)}`;
+    }
+
+    displaySearchedCharacters();
+
+    function addToFavourites(character) {
+    let favourites = JSON.parse(localStorage.getItem('favourites')) || [];
+
+    // Avoid duplicates
+    if (!favourites.some(fav => fav.id === character.id)) {
+        favourites.push(character);
+        localStorage.setItem('favourites', JSON.stringify(favourites));
+        alert(`${character.name} added to favourites!`);
+    } else {
+        alert(`${character.name} is already in favourites!`);
+    }
+}
+</script>
+
+
+</body>
+</html>

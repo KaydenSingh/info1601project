@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rick and Morty Wiki</title>
+    <link rel="stylesheet" href=
+"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<style>
+ @font-face {
+            font-family: 'Get Schwifty';
+            src: url('Get_Schwifty.ttf') format('truetype'); /* Adjust the file name if necessary */
+        }
+
+body {
+    position: relative; 
+    background-color: rgb(75, 75, 75);
+    background-image: url('background.jpg');
+    background-repeat: no-repeat;
+    background-size: cover; 
+    background-attachment: fixed;
+    padding: 0;
+    margin: 0;
+    flex-direction: column;
+    min-height: 100vh; 
+}
+
+body::before {
+    content: "";
+    position: absolute;
+    top: 0; 
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(128, 128, 128, 0.5); 
+}
+
+nav, nav2, .search, .content, footer {
+    position: relative;
+    z-index: 2; 
+}
+
+nav {
+    padding: 10px;
+    color: white;
+    font-size: 25px;
+    font-weight: bold;
+    font-family: monospace;
+    background-color: #707070;
+    display: flex;
+    height: 100px;
+    align-items: center;
+    box-shadow: 0px 10px 5px 0px rgba(0,0,0,0.31);
+}
+
+.logo img {
+  
+    height: 100px;
+    width: auto;
+}
+
+nav2 {
+    padding: 10px;
+    color: white;
+    font-size: 25px;
+    margin: auto;
+    font-weight: bold;
+    font-family: monospace;
+    background-color: #707070;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 800px;
+}
+
+.links {
+    margin-left: auto;
+    display: flex;
+    gap: 10px;
+}
+
+.search {
+    display: flex;
+    justify-content: flex-end;
+    padding: 20px 20px 0 20px;  
+    gap: 10px;
+    box-shadow: rgba(0,0,0,0.31);
+}
+
+.filter {
+    padding: 10px;
+}
+
+button {
+    border: 1px solid gray;
+    padding: 5px;
+    border-radius: 6px;
+    height: 60px;
+    width: 150px;
+    cursor: pointer;
+}
+
+.search button {
+    border: 1px solid gray;
+    border-radius: 6px;
+    height: 50px;
+    width: 50px;
+    cursor: pointer;
+}
+
+
+
+#result {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: center;
+    margin: 20px;
+}
+
+.content {
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    width: calc(34% - );
+    height: 350px;
+    background-color: rgb(34, 34, 34);
+    padding: 20px;
+    margin: 10px; 
+    border-radius: 10px; 
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); 
+    cursor: pointer;
+}
+.content a {
+            color: rgb(255, 255, 255);
+            font-family: 'Get Schwifty', sans-serif; 
+            text-decoration: none;
+            text-wrap-style: bold;
+        }
+
+.content img {
+    padding-top: 30px;
+    width: 600px;
+    
+    height: auto;
+}
+footer {
+  text-align: left;
+  padding: 3px;
+  background-color: #707070;
+  color: white;
+}
+
+</style>
+
+<body>
+<main>
+    <nav>
+
+        <section class="logo">
+          <img src="graylogo.jpg" alt="Rick and Morty Logo">
+        </section>
+        <section class="links">
+          <button onclick="fetchAllCharacters('https://rickandmortyapi.com/api/character')">Home</button>
+          <a href="fav.html">
+            <button>Favourite</button>
+          </a>
+          <a href="login.html">
+            <button>Login</button>
+          </a>
+        </section>
+
+    </nav>
+    <section class="search">
+      <input type="search" id="searchKey" placeholder="Search">
+      <button class="searchbtn" onclick="search()">
+          <i class="fa fa-search"></i>
+      </button>
+  </section>
+    
+    <nav2>
+
+      <section class="filter">
+
+      <button >Filter by Status: </button>
+      <button onclick="filterByStatus('Alive')">Alive</button>
+      <button onclick="filterByStatus('Dead')">Dead</button>
+      <button onclick="filterByStatus('unknown')">Unknown</button>
+
+      </section>
+      
+
+    </nav2>
+
+
+    <div id="result"></div>
+
+    <footer>
+      <p>Authors: Kayden Singh, Josh Bissambhar, Joshua Pascall<br>
+      
+    </footer>
+</main>
+<script>
+
+
+let state = [];
+
+async function fetchAllCharacters() {
+    let url = 'https://rickandmortyapi.com/api/character';
+    let allCharacters = [];
+
+    while (url) {
+        const response = await fetch(url);
+        const data = await response.json();
+        allCharacters = allCharacters.concat(data.results);
+        url = data.info.next; 
+    }
+
+    state = allCharacters; 
+    drawCharacters(state);
+}
+
+
+function drawCharacters(records) {
+    let html = '';
+    let result = document.querySelector('#result');
+    
+    for (let rec of records) {
+        html += `
+        <section class="content" onclick="search('${rec.name}')">
+            <img src="${rec.image}" style="width:300px">
+            <br>
+ 
+            <a>${rec.name.toUpperCase()}</a> 
+            <br>
+        </section>
+        `;
+    }
+    
+    result.innerHTML = html;
+    updatePaginationButtons();
+}
+
+function filterByStatus(status) {
+   
+    let filtered = state.filter(rec => rec.status === status);
+    
+  
+    drawCharacters(filtered);
+}
+
+function search(name) {
+    let searchKey = name || document.querySelector('#searchKey').value;
+    window.location.href = `search.html?query=${encodeURIComponent(searchKey)}`;
+}
+
+fetchAllCharacters();
+</script>
+
+</body>
+</html>
