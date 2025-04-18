@@ -145,6 +145,11 @@ button {
     
     height: auto;
 }
+    
+.no-pointer {
+    cursor: default;
+  }
+
 footer {
   text-align: left;
   padding: 3px;
@@ -183,7 +188,7 @@ footer {
 
       <section class="filter">
 
-      <button >Filter by Status: </button>
+      <button class="no-pointer">Filter by Status:</button>
       <button onclick="filterByStatus('Alive')">Alive</button>
       <button onclick="filterByStatus('Dead')">Dead</button>
       <button onclick="filterByStatus('unknown')">Unknown</button>
